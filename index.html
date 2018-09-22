@@ -1,0 +1,212 @@
+<!doctype html>
+ <html>
+  <head>
+   <meta charset='utf-8'>
+   <meta content='Yusuke' name='author'>
+   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+   <title>Voice Sample</title>
+   <link href='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.3/semantic.css' rel='stylesheet'>
+   <style>
+    .ui.fixed.menu+.ui.grid {
+        padding-top: 4.75rem;
+    }
+    .ui #controller
+    {
+      padding:0 !important;
+    }
+    .ui #controller > .dg.main, .close-button
+    {
+      width:100% !important;
+    }
+
+    .dg.main.taller-than-window .close-button {
+    border-top: 1px solid #ddd;
+}
+
+.dg.main .close-button {
+    background-color: #e8e8e8;
+}
+ 
+.dg.main .close-button:hover {
+    background-color: #ddd;
+}
+
+.dg {
+    color: #555;
+    text-shadow: none !important;
+}
+
+.dg.main::-webkit-scrollbar {
+    background: #fafafa;
+}
+
+.dg.main::-webkit-scrollbar-thumb {
+    background: #bbb;
+}
+ 
+.dg li:not(.folder) {
+    background: #fafafa;
+    border-bottom: 1px solid #ddd;
+}
+ 
+.dg li.save-row .button {
+    text-shadow: none !important;
+}
+
+.dg li.title {
+    background: #e8e8e8 url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
+}
+
+.dg .cr.function:hover,.dg .cr.boolean:hover {
+    background: #fff;
+}
+ 
+.dg .c input[type=text] {
+    background: #e9e9e9;
+}
+ 
+.dg .c input[type=text]:hover {
+    background: #eee;
+}
+ 
+.dg .c input[type=text]:focus {
+    background: #eee;
+    color: #555;
+}
+ 
+.dg .c .slider {
+    background: #e9e9e9;
+}
+
+.dg .c .slider:hover {
+    background: #eee;
+}
+  </style>
+   <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js'></script>
+   <script src='https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.3.3/semantic.js'></script>
+   <script src='https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.2/dat.gui.js'></script>
+   <script>
+
+    $(function(){
+
+      var gui = new dat.GUI({autoPlace:false})
+      
+      $('.ui#controller').append(gui.domElement)
+
+
+      var Yomiage = function(){
+        this.speech = null;
+
+        this.start = function(){
+          this.speech = new SpeechSynthesisUtterance();
+          this.speech.volume = 1;
+          this.speech.rate   = 1;
+          this.speech.pitch  = 1;
+          this.speech.text   = "";
+          this.speech.lang   = "ja-JP";
+          this.speech.isPauseing = false;
+          this._set_voice();
+        };
+        this._set_voice = function(){
+          var self = this;
+          speechSynthesis.onvoiceschanged = function(){
+            var voices = speechSynthesis.getVoices();
+            
+
+            for (var i = 0; i < voices.length; i++) {
+
+              $('.menu#language').append($('<a>',{
+                class:'item',
+                text:voices[i].lang
+              }))
+
+
+              if (voices[i].lang == "ja-JP"){
+                self.speech.voice = voices[i];
+              }
+            }
+          };
+        };
+        this.talk = function(str){
+          this.speech.text = str;
+
+          speechSynthesis.speak(this.speech);
+        };
+      }
+      var yomiage = new Yomiage();
+      yomiage.start();
+
+
+
+      gui.add(yomiage.speech,'volume').min(0).max(1.0).name('ボリュームの高さ')
+      gui.add(yomiage.speech,'rate').min(0.1).max(10.0).name('読み上げる速さ')
+      gui.add(yomiage.speech,'pitch').min(0.0).max(2.0).name('声の高さ')
+
+
+      $('.dropdown').dropdown({
+        onChange:function(lang){
+  
+         　yomiage.speech.lang = lang
+        }
+      });
+
+
+
+  if (!'SpeechSynthesisUtterance' in window) {
+    alert('Web Speech API には未対応です.');
+    return;
+  }
+
+$('#play').on('click',() => {
+  yomiage.talk($('textarea#text').val())
+})
+
+
+
+    })
+
+
+
+
+  </script>
+ </head>
+  <body>
+    <div class='ui container'>
+      <div class='ui menu fixed pointing icon'>
+          <a class="item">
+              <i class="play icon" id='play'></i>
+            </a>
+
+
+            <div class="ui dropdown item">
+                Language <i class="dropdown icon"></i>
+                <div class="menu" id='language'>
+                </div>
+              </div>
+
+          <div class='right menu'>
+              <div class='item'><i class='icon teal volume up'></i></div>
+          </div>
+      </div>
+      <div class='ui grid'>
+
+        <div class='row'>
+          <div class='column'>
+
+            <div class='ui blue segment'>
+                <div class="ui form">
+                  <textarea placeholder='ここに入力して' id='text'></textarea>
+                </div>
+            </div>
+            <div class='ui blue segment' id='controller'>
+            </div>
+          </div>
+        </div>
+
+
+
+        
+      </div>
+    </div>
+ </body>
+</html>
